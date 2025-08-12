@@ -10,8 +10,7 @@ st.title("Risk Flagging Chatbot (Gemini 2.5)")
 
 def highlight_html(text: str) -> str:
     """Wraps bprr...bprr sections in <mark> tags for highlighting."""
-    return re.sub(r'bprr(.*?)bprr', r'<mark>\1</mark>', text)
-
+    return re.sub(r'bprr(.*?)bprr', r'<mark>\1</mark>', text, flags=re.DOTALL)
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
