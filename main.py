@@ -66,3 +66,6 @@ if prompt:
         st.markdown(highlighted_text, unsafe_allow_html=True)
 
     st.session_state.messages.append({"role": "assistant", "content": highlighted_text})
+
+with col2:
+    st.write("Hello World")
