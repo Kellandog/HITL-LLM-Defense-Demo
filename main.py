@@ -3,7 +3,7 @@ import re
 import google.generativeai as genai
 
 # Configure Gemini API
-genai.configure(api_key="YOUR_API_KEY")
+genai.configure(api_key="AIzaSyDHKNVVFmw8qIaZiBFEz5xwV8ZxXQ0VecA")
 model = genai.GenerativeModel("gemini-2.5-pro")
 
 st.title("Risk Flagging Chatbot (Gemini 2.5)")
