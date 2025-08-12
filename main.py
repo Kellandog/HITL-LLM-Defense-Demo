@@ -3,7 +3,7 @@ import re
 import google.generativeai as genai
 
 # Configure Gemini API
-genai.configure(api_key="AIzaSyDHKNVVFmw8qIaZiBFEz5xwV8ZxXQ0VecA")
+genai.configure(api_key="AIzaSyDHKNVVFmw8qIaZiBFEz5xwV8ZxX0VecA")
 model = genai.GenerativeModel("gemini-2.5-pro")
 
 st.title("Risk Flagging Chatbot (Gemini 2.5)")
@@ -11,12 +11,18 @@ st.title("Risk Flagging Chatbot (Gemini 2.5)")
 def highlight_html(text: str) -> str:
     """Wraps bprr...bprr sections in <mark> tags for highlighting."""
     return re.sub(r'bprr(.*?)bprr', r'<mark>\1</mark>', text, flags=re.DOTALL)
+
+# Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
             "role": "system",
             "content": (
-                "You are responsible for identifying and highlighting potential risk areas in a contract or document. "
+                "You are responsible for selecting an RFQ which aligns with a users stated machines, creating a proposal based on the chosen RFQ, and then finding risks present in a user edited version of the prompt."
+                "These different responsibilities will be designated based on the number which comes at the start of the prompt."
+                "A 1 will mean you are supposed to choose one of the RFQs based on input machines."
+                "A 2 will mean you are supposed to create a proposal based on the input RFQ."
+                "A 3 will mean you are supposed to find risks present in the document, and presenting them in the following format:"
                 "Risks may include, but are not limited to:\n"
                 "- Missing compliance clauses\n"
                 "- Unusual or unclear delivery terms\n"
@@ -36,41 +42,106 @@ if "messages" not in st.session_state:
                 "8. If the user wants changes, apply them and continue checking for risk until they confirm finalization."
                 "Always seperate the original RFQ and Explanation of Risks with three ***."
                 "The number of explanations should be equal to the number of highlights. Only one explanation per highlight."
+                "Additionally, a user may request a summary or explanation of any section of the proposal."
             )
         }
     ]
 
-# Display chat history (only user inputs so far)
-for message in st.session_state.messages:
-    if message["role"] == "user":
-        with st.chat_message("user"):
-            st.markdown(message["content"])
+if "step" not in st.session_state:
+    st.session_state.step = 1
 
-# Input box remains at top
-prompt = st.chat_input("Please input your contract for review")
+# Step 1: Initial input (machines or initial prompt for RFQ selection)
+if st.session_state.step == 1:
+    st.header("Step 1: Enter your machines or initial input")
+    user_input = st.text_area("Enter your machines or input for RFQ selection:", height=150)
 
-if prompt:
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    if st.button("Submit and Continue"):
+        if user_input.strip():
+            # Append user input to messages
+            st.session_state.messages.append({"role": "user", "content": user_input})
 
-    with st.chat_message("user"):
-        st.markdown(prompt)
+            # Prepare prompt for Gemini
+            gemini_prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])
 
-    gemini_prompt = "\n".join(
-        [f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages]
-    )
+            # Call Gemini model
+            response = model.generate_content(gemini_prompt)
+            assistant_text = response.candidates[0].content.parts[0].text
 
-    response = model.generate_content(gemini_prompt)
-    highlighted_text = highlight_html(response.candidates[0].content.parts[0].text)
+            # Append assistant response
+            st.session_state.messages.append({"role": "assistant", "content": assistant_text})
 
-    # Show results side-by-side
+            # Move to Step 2
+            st.session_state.step = 2
+            st.experimental_rerun()
+        else:
+            st.warning("Please enter some text before continuing.")
+
+# Step 2: Show two columns: editable proposal and highlighted risks
+elif st.session_state.step == 2:
+    st.header("Step 2: Review and edit the proposal")
+
+    # Get last assistant message as the text to show/edit
+    last_assistant_message = ""
+    for msg in reversed(st.session_state.messages):
+        if msg["role"] == "assistant":
+            last_assistant_message = msg["content"]
+            break
+
+    # Highlight risky parts
+    highlighted_text = highlight_html(last_assistant_message)
+
+    # Extract the proposal part (before ***)
+    proposal_text = last_assistant_message.split('***', 1)[0]
+
     col1, col2 = st.columns(2)
+
     with col1:
-        plain_text = re.sub(r'</?mark>', '', highlighted_text)
-        st.text_area("Edit Proposal Here", plain_text.split('***', 1)[0], height=1000)
+        edited_text = st.text_area("Edit Proposal Here", value=proposal_text, height=600)
 
     with col2:
         st.markdown(highlighted_text, unsafe_allow_html=True)
 
-    st.session_state.messages.append(
-        {"role": "assistant", "content": highlighted_text}
-    )
+    col3, col4 = st.columns(2)
+
+    with col3:
+        if st.button("Check for Risks Again"):
+            # User wants to re-check edited text, so send it back to model with "3 " prefix for risk checking
+            st.session_state.messages.append({"role": "user", "content": "3 " + edited_text})
+
+            # Prepare prompt again with updated user message
+            gemini_prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])
+
+            response = model.generate_content(gemini_prompt)
+            assistant_text = response.candidates[0].content.parts[0].text
+
+            # Append new assistant message with risk flagged
+            st.session_state.messages.append({"role": "assistant", "content": assistant_text})
+
+            st.experimental_rerun()
+
+    with col4:
+        if st.button("Finalize Document"):
+            # Finalize means remove all bprr tags and display final text
+            final_text = re.sub(r'bprr(.*?)bprr', r'\1', last_assistant_message, flags=re.DOTALL)
+            final_text = final_text.replace("***", "\n\n")  # Optional clean up
+
+            st.session_state.messages.append({"role": "assistant", "content": "Finalized Document:\n\n" + final_text})
+
+            st.session_state.step = 3
+            st.experimental_rerun()
+
+# Step 3: Show finalized document and option to restart
+elif st.session_state.step == 3:
+    st.header("Step 3: Finalized Document")
+    # Show last assistant message which should be finalized document
+    last_assistant_message = ""
+    for msg in reversed(st.session_state.messages):
+        if msg["role"] == "assistant":
+            last_assistant_message = msg["content"]
+            break
+    st.text_area("Final Document", value=last_assistant_message, height=600)
+
+    if st.button("Start Over"):
+        st.session_state.step = 1
+        st.session_state.messages = st.session_state.messages[:1]  # Keep only system message
+        st.experimental_rerun()
