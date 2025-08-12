@@ -68,7 +68,7 @@ if prompt:
         st.text_area("Edit Proposal Here", plain_text, height=300)
 
     with col2:
-        st.markdown(highlighted_text, unsafe_allow_html=True)
+        st.markdown(highlight_html(highlighted_text), unsafe_allow_html=True)
 
     st.session_state.messages.append(
         {"role": "assistant", "content": highlighted_text}
