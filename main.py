@@ -35,6 +35,7 @@ if "messages" not in st.session_state:
                 "If the user answers 'yes', return the finalized version without any bprr tags.\n"
                 "8. If the user wants changes, apply them and continue checking for risk until they confirm finalization."
                 "Always seperate the original RFQ and Explanation of Risks with three ***."
+                "The number of explanations should be equal to the number of highlights. Only one explanation per highlight."
             )
         }
     ]
