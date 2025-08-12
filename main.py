@@ -2,12 +2,14 @@ import streamlit as st
 import re
 import google.generativeai as genai
 
-genai.configure(api_key="AIzaSyDHKNVVFmw8qIaZiBFEz5xwV8ZxXQ0VecA")
+# Configure Gemini API
+genai.configure(api_key="YOUR_API_KEY")
 model = genai.GenerativeModel("gemini-2.5-pro")
 
 st.title("Risk Flagging Chatbot (Gemini 2.5)")
 
 def highlight_html(text: str) -> str:
+    """Wraps bprr...bprr sections in <mark> tags for highlighting."""
     return re.sub(r'bprr(.*?)bprr', r'<mark>\1</mark>', text)
 
 if "messages" not in st.session_state:
@@ -37,14 +39,13 @@ if "messages" not in st.session_state:
         }
     ]
 
+# Display chat history (only user inputs so far)
 for message in st.session_state.messages:
     if message["role"] == "user":
         with st.chat_message("user"):
             st.markdown(message["content"])
-    elif message["role"] == "assistant":
-        with st.chat_message("assistant"):
-            st.markdown(message["content"], unsafe_allow_html=True)
 
+# Input box remains at top
 prompt = st.chat_input("Please input your contract for review")
 
 if prompt:
@@ -59,9 +60,28 @@ if prompt:
 
     response = model.generate_content(gemini_prompt)
     text = response.text
-    highlighted_text = highlight_html(text)
 
-    with st.chat_message("assistant"):
+    # Separate highlighted text from explanations
+    if "\n" in text:
+        parts = text.split("\n", 1)
+        highlighted_part = parts[0]
+        explanation_part = parts[1]
+    else:
+        highlighted_part = text
+        explanation_part = ""
+
+    highlighted_text = highlight_html(highlighted_part)
+
+    # Show results side-by-side
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Highlighted Contract")
         st.markdown(highlighted_text, unsafe_allow_html=True)
 
-    st.session_state.messages.append({"role": "assistant", "content": highlighted_text})
+    with col2:
+        st.subheader("Explanations")
+        st.markdown(explanation_part)
+
+    st.session_state.messages.append(
+        {"role": "assistant", "content": highlighted_text + "\n\n" + explanation_part}
+    )
