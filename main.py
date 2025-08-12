@@ -4,6 +4,7 @@ import google.generativeai as genai
 
 genai.configure(api_key="AIzaSyDHKNVVFmw8qIaZiBFEz5xwV8ZxXQ0VecA")
 model = genai.GenerativeModel("gemini-2.5-pro")
+col1, col2 = st.columns(2)
 
 st.title("Risk Flagging Chatbot (Gemini 2.5)")
 
@@ -36,14 +37,14 @@ if "messages" not in st.session_state:
             )
         }
     ]
-
-for message in st.session_state.messages:
-    if message["role"] == "user":
-        with st.chat_message("user"):
-            st.markdown(message["content"])
-    elif message["role"] == "assistant":
-        with st.chat_message("assistant"):
-            st.markdown(message["content"], unsafe_allow_html=True)
+with col1:
+    for message in st.session_state.messages:
+        if message["role"] == "user":
+            with st.chat_message("user"):
+                st.markdown(message["content"])
+        elif message["role"] == "assistant":
+            with st.chat_message("assistant"):
+                st.markdown(message["content"], unsafe_allow_html=True)
 
 prompt = st.chat_input("Please input your contract for review")
 
