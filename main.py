@@ -27,7 +27,7 @@ if "messages" not in st.session_state:
                 "You are responsible for selecting an RFQ which aligns with a users stated machines, creating a proposal based on the chosen RFQ, and then finding risks present in a user edited version of the prompt."
                 "These different responsibilities will be designated based on the number which comes at the start of the prompt."
                 "A 1 will mean you are supposed to choose one of the RFQs based on input machines."
-                "A 2 will mean you are supposed to create a proposal based on the input RFQ."
+                "A 2 will mean you are supposed to create a proposal based on the input RFQ. Provide a short reasoning for why it was selected, and then put the actual proposal under that."
                 "A 3 will mean you are supposed to find risks present in the document, and presenting them in the following format:"
                 "Risks may include, but are not limited to:\n"
                 "- Missing compliance clauses\n"
