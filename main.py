@@ -59,30 +59,17 @@ if prompt:
     )
 
     response = model.generate_content(gemini_prompt)
-    text = response.candidates[0].content.parts[0].text
-
-    # Separate highlighted text from explanations
-    if "\n" in text:
-        parts = text.split("\n", 1)
-        highlighted_part = parts[0]
-        explanation_part = parts[1]
-    else:
-        highlighted_part = text
-        explanation_part = ""
-
-    highlighted_text = highlight_html(highlighted_part)
+    highlighted_text = response.candidates[0].content.parts[0].text
 
     # Show results side-by-side
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("Edit Proposal Here")
         plain_text = re.sub(r'<.*?>', '', highlighted_text)
-        st.text_area(plain_text, height=300)
+        st.text_area("Edit Proposal Here", plain_text, height=300)
 
     with col2:
-        st.subheader("Explanations")
         st.markdown(highlighted_text, unsafe_allow_html=True)
 
     st.session_state.messages.append(
-        {"role": "assistant", "content": highlighted_text + "\n\n" + explanation_part}
+        {"role": "assistant", "content": highlighted_text}
     )
