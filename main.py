@@ -1,6 +1,7 @@
 import streamlit as st
 import re
 import google.generativeai as genai
+import streamlit.components.v1 as components
 
 def rerun():
     from streamlit.runtime.scriptrunner import RerunException
@@ -110,21 +111,7 @@ elif st.session_state.step == 2:
     col3, col4 = st.columns(2)
 
     with col3:
-        if st.button("Check for Risks Again"):
-            # User wants to re-check edited text, so send it back to model with "3 " prefix for risk checking
-            st.session_state.messages.append({"role": "user", "content": "3 " + edited_text})
-
-            # Prepare prompt again with updated user message
-            gemini_prompt = "\n".join([f"{msg['role']}: 2{msg['content']}" for msg in st.session_state.messages])
-
-            response = model.generate_content(gemini_prompt)
-            assistant_text = response.candidates[0].content.parts[0].text
-
-            # Append new assistant message with risk flagged
-            st.session_state.messages.append({"role": "assistant", "content": assistant_text})
-
-            rerun()
-
+        st.write()
     with col4:
         if st.button("Finalize Document"):
             # Finalize means remove all bprr tags and display final text
@@ -147,8 +134,15 @@ elif st.session_state.step == 3:
             break
     st.text_area("Final Document", value=last_assistant_message, height=600)
 
-    if st.button("Start Over"):
-        st.session_state.step = 1
-        st.session_state.messages = st.session_state.messages[:1]  # Keep only system message
-        rerun()
+    text_to_copy = st.session_state.messages[-1]["content"] if st.session_state.messages else ""
+
+    copy_button_html = f"""
+    <button onclick="
+    navigator.clipboard.writeText(`{text_to_copy}`).then(() => {{
+        alert('Copied to clipboard!');
+    }});
+    ">Copy Final Document</button>
+    """
+
+    components.html(copy_button_html, height=50)
         
