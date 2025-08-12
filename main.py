@@ -66,7 +66,7 @@ if prompt:
     col1, col2 = st.columns(2)
     with col1:
         plain_text = re.sub(r'</?mark>', '', highlighted_text)
-        st.text_area("Edit Proposal Here", plain_text.split('***', 1)[0], height=800)
+        st.text_area("Edit Proposal Here", plain_text.split('***', 1)[0], height=1000)
 
     with col2:
         st.markdown(highlighted_text, unsafe_allow_html=True)
