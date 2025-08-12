@@ -59,7 +59,7 @@ if prompt:
     )
 
     response = model.generate_content(gemini_prompt)
-    text = response.text
+    text = response.candidates[0].content.parts[0].text
 
     # Separate highlighted text from explanations
     if "\n" in text:
