@@ -98,7 +98,7 @@ elif st.session_state.step == 2:
     highlighted_text = highlight_html(last_assistant_message)
 
     # Extract the proposal part (before ***)
-    proposal_text = last_assistant_message.split('***', 1)[0]
+    proposal_text = last_assistant_message
 
     col1, col2 = st.columns(2)
 
