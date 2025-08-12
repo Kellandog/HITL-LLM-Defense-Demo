@@ -35,6 +35,7 @@ if "messages" not in st.session_state:
                 "7. If the user replies 'no' to all changes, follow up with: Would you like to finalize the document? "
                 "If the user answers 'yes', return the finalized version without any bprr tags.\n"
                 "8. If the user wants changes, apply them and continue checking for risk until they confirm finalization."
+                "Always seperate the original RFQ and Explanation of Risks with three ***."
             )
         }
     ]
@@ -59,16 +60,16 @@ if prompt:
     )
 
     response = model.generate_content(gemini_prompt)
-    highlighted_text = response.candidates[0].content.parts[0].text
+    highlighted_text = highlight_html(response.candidates[0].content.parts[0].text)
 
     # Show results side-by-side
     col1, col2 = st.columns(2)
     with col1:
         plain_text = re.sub(r'<.*?>', '', highlighted_text)
-        st.text_area("Edit Proposal Here", plain_text, height=300)
+        st.text_area("Edit Proposal Here", plain_text.split('***', 1)[0], height=300)
 
     with col2:
-        st.markdown(highlight_html(highlighted_text), unsafe_allow_html=True)
+        st.markdown(highlighted_text, unsafe_allow_html=True)
 
     st.session_state.messages.append(
         {"role": "assistant", "content": highlighted_text}
