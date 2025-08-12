@@ -2,6 +2,11 @@ import streamlit as st
 import re
 import google.generativeai as genai
 
+def rerun():
+    from streamlit.runtime.scriptrunner import RerunException
+    from streamlit.runtime.scriptrunner import RerunData
+    raise RerunException(RerunData())
+
 # Configure Gemini API
 genai.configure(api_key="AIzaSyDHKNVVFmw8qIaZiBFEz5xwV8ZxXQ0VecA")
 model = genai.GenerativeModel("gemini-2.5-pro")
@@ -73,7 +78,7 @@ if st.session_state.step == 1:
 
             # Move to Step 2
             st.session_state.step = 2
-            st.experimental_rerun()
+            rerun()
         else:
             st.warning("Please enter some text before continuing.")
 
@@ -118,7 +123,7 @@ elif st.session_state.step == 2:
             # Append new assistant message with risk flagged
             st.session_state.messages.append({"role": "assistant", "content": assistant_text})
 
-            st.experimental_rerun()
+            rerun()
 
     with col4:
         if st.button("Finalize Document"):
@@ -129,7 +134,7 @@ elif st.session_state.step == 2:
             st.session_state.messages.append({"role": "assistant", "content": "Finalized Document:\n\n" + final_text})
 
             st.session_state.step = 3
-            st.experimental_rerun()
+            rerun()
 
 # Step 3: Show finalized document and option to restart
 elif st.session_state.step == 3:
@@ -145,5 +150,5 @@ elif st.session_state.step == 3:
     if st.button("Start Over"):
         st.session_state.step = 1
         st.session_state.messages = st.session_state.messages[:1]  # Keep only system message
-        st.experimental_rerun()
+        rerun()
         
