@@ -49,7 +49,7 @@ if "messages" not in st.session_state:
                 "Always seperate the original RFQ and Explanation of Risks with three ***."
                 "The number of explanations should be equal to the number of highlights. Only one explanation per highlight."
                 "Additionally, a user may request a summary or explanation of any section of the proposal."
-                "Do not use elements such as tables or graphs"
+                "Do not use elements such as tables, graphs, or dotted lists."
                 "These are the four RFQs which will be used: 1. RFQ for 500 rugged tactical communication headsets (MIL-STD-810G & 461, 90-day delivery); 2. RFQ for 1,000 Level IIIA ballistic vests (NIJ Standard-0101.06, 120-day delivery); 3. RFQ for 300 waterproof portable power supplies (24-hr battery, MIL-STD compliant, 60-day delivery); 4. RFQ for 150 Gen III night vision goggles (infrared, helmet-mount, MIL-STD-810G & 461, 90-day delivery)."
             )
         }
@@ -116,7 +116,7 @@ elif st.session_state.step == 2:
     with col4:
         if st.button("Finalize Document"):
             # Finalize means remove all bprr tags and display final text
-            final_text = re.sub(r'bprr(.*?)bprr', r'\1', last_assistant_message, flags=re.DOTALL)
+            final_text = re.sub(r'bprr(.*?)bprr', r'\1', edited_text, flags=re.DOTALL)
             final_text = final_text.replace("***", "\n\n")  # Optional clean up
 
             st.session_state.messages.append({"role": "assistant", "content": "Finalized Document:\n\n" + final_text})
