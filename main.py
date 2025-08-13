@@ -118,7 +118,7 @@ elif st.session_state.step == 2:
     with col4:
         if st.button("Finalize Document"):
             # Finalize means remove all bprr tags and display final text
-            final_text = re.sub(r'bprr(.*?)bprr', r'\1', edited_text, flags=re.DOTALL)
+            final_text = re.sub(r'bprr(.*?)bprr', r'\1', edited_text.replace("*",""), flags=re.DOTALL)
             final_text = final_text.replace("***", "\n\n")  # Optional clean up
 
             st.session_state.messages.append({"role": "assistant", "content": "Finalized Document:\n\n" + final_text})
