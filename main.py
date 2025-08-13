@@ -140,12 +140,14 @@ elif st.session_state.step == 3:
 
     text_to_copy = st.session_state.messages[-1]["content"] if st.session_state.messages else ""
 
-    safe_text = json.dumps(text_to_copy)  # Safely encode for JS
+    safe_text = json.dumps(text_to_copy)  # e.g. "\"Final document text...\""
+
+    js_string = safe_text[1:-1].replace("'", "\\'")  # strip quotes, escape single quotes
 
     copy_button_html = (
-        '<button style="padding:8px 16px; background:#4CAF50; color:white; border:none; '
-        'border-radius:6px; cursor:pointer;" '
-        'onclick="navigator.clipboard.writeText(' + safe_text + '); alert(\'Copied to clipboard!\');">'
-        'Copy Final Text</button>'
+        f'<button style="padding:8px 16px; background:#4CAF50; color:white; border:none; '
+        f'border-radius:6px; cursor:pointer;" '
+        f'onclick="navigator.clipboard.writeText(\'{js_string}\'); alert(\'Copied to clipboard!\');">'
+        f'Copy Final Text</button>'
     )
     components.html(copy_button_html, height=50)
