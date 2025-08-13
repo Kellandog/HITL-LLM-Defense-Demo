@@ -142,13 +142,5 @@ elif st.session_state.step == 3:
 
     safe_text = json.dumps(text_to_copy)  # Safely encode for JS
 
-    copy_button_html = f"""
-    <button style="padding:8px 16px; background:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;"
-    onclick="navigator.clipboard.writeText({safe_text}).then(() => {{
-        alert('Copied to clipboard!');
-    }})">
-    Copy Final Document
-    </button>
-    """
-
+    copy_button_html = f"""<button style="padding:8px 16px; background:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;" onclick="navigator.clipboard.writeText({safe_text}).then(() => {{alert('Copied to clipboard!');}})"> Copy Final Text </button>"""
     components.html(copy_button_html, height=50)
