@@ -28,7 +28,7 @@ if "messages" not in st.session_state:
             "content": (
                 "You are responsible for selecting an RFQ which aligns with a users stated machines, creating a proposal based on the chosen RFQ, and then finding risks present in a user edited version of the prompt."
                 "These different responsibilities will be designated based on the number which comes at the start of the prompt."
-                "A 1 will mean you are supposed to choose one of the RFQs based on input machines. Provide a short reasoning for why it was selected, and then put the actual proposal under that."
+                "A 1 will mean you are supposed to choose one of the RFQs based on input machines. Provide a short reasoning for why it was selected, and then put the actual proposal under that. Alternatively, the user may input a RFQ, in which case you should just generate a proposal based on the input RFQ and not any of the other options."
                 "A 2 will mean you are supposed to create a proposal based on the input RFQ."
                 "A 3 will mean you are supposed to find risks present in the document, and presenting them in the following format:"
                 "Risks may include, but are not limited to:\n"
@@ -52,6 +52,7 @@ if "messages" not in st.session_state:
                 "The number of explanations should be equal to the number of highlights. Only one explanation per highlight."
                 "Additionally, a user may request a summary or explanation of any section of the proposal."
                 "Do not use elements such as tables, graphs, or dotted lists."
+                "Always end with a sign off type of thing with name and company name and similar things, not filled in."
                 "These are the ten RFQs which will be used: 1. RFQ for 200 ruggedized field laptops (MIL-STD-810H, 72-hour battery life, integrated GPS, 45-day delivery); 2. RFQ for 400 tactical UAV reconnaissance drones (thermal imaging, encrypted comms, 120-minute flight time, 90-day delivery); 3. RFQ for 1,500 flame-resistant combat uniforms (NFPA 2112 compliant, moisture-wicking, 60-day delivery); 4. RFQ for 250 portable satellite communication terminals (global coverage, MIL-STD-188-164A, 75-day delivery); 5. RFQ for 600 armored tactical transport cases (NIJ Level III ballistic protection, waterproof to IP68, 50-day delivery); 6. RFQ for 350 high-output portable water purification units (capable of 1,000 liters/hour, NSF/ANSI Standard 53, 40-day delivery); 7. RFQ for 800 advanced combat helmets (NIJ Level IIIA, integrated comms mount, 90-day delivery); 8. RFQ for 500 tactical field medical kits (NSN compliant, waterproof case, 30-day delivery); 9. RFQ for 1,200 long-range encrypted handheld radios (AES-256 encryption, 40-mile range, MIL-STD-810G, 60-day delivery); 10. RFQ for 100 portable solar-powered field generators (5 kW output, foldable panels, MIL-STD-810G, 70-day delivery)"
             )
         }
@@ -62,8 +63,8 @@ if "step" not in st.session_state:
 
 # Step 1: Initial input (machines or initial prompt for RFQ selection)
 if st.session_state.step == 1:
-    st.header("Step 1: Enter your machines or initial input")
-    user_input = st.text_area("Enter your machines or input for RFQ selection:", height=150)
+    st.header("Step 1: Enter your machines or RFQ")
+    user_input = st.text_area("Enter your machines or RFQ for proposal:", height=150)
 
     if st.button("Submit and Continue"):
         if user_input.strip():
