@@ -104,7 +104,7 @@ elif st.session_state.step == 2:
     col1, col2 = st.columns(2)
 
     with col1:
-        edited_text = st.text_area("Edit Proposal Here", value=proposal_text, height=600)
+        edited_text = st.text_area("Edit Proposal Here", value=proposal_text, height=3000)
 
     with col2:
         st.markdown(highlighted_text, unsafe_allow_html=True)
