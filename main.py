@@ -145,7 +145,7 @@ elif st.session_state.step == 3:
     copy_button_html = (
         '<button style="padding:8px 16px; background:#4CAF50; color:white; border:none; '
         'border-radius:6px; cursor:pointer;" '
-        'onclick="navigator.clipboard.writeText(' + safe_text + ').then(() => alert(\'Copied to clipboard!\'));">'
+        'onclick="navigator.clipboard.writeText(' + safe_text + '); alert(\'Copied to clipboard!\');">'
         'Copy Final Text</button>'
-)   
+    )
     components.html(copy_button_html, height=50)
