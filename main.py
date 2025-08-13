@@ -2,6 +2,8 @@ import streamlit as st
 import re
 import google.generativeai as genai
 import streamlit.components.v1 as components
+import html
+import json
 
 def rerun():
     from streamlit.runtime.scriptrunner import RerunException
@@ -50,7 +52,7 @@ if "messages" not in st.session_state:
                 "The number of explanations should be equal to the number of highlights. Only one explanation per highlight."
                 "Additionally, a user may request a summary or explanation of any section of the proposal."
                 "Do not use elements such as tables, graphs, or dotted lists."
-                "These are the ten RFQs which will be used: 5. RFQ for 200 ruggedized field laptops (MIL-STD-810H, 72-hour battery life, integrated GPS, 45-day delivery); 6. RFQ for 400 tactical UAV reconnaissance drones (thermal imaging, encrypted comms, 120-minute flight time, 90-day delivery); 7. RFQ for 1,500 flame-resistant combat uniforms (NFPA 2112 compliant, moisture-wicking, 60-day delivery); 8. RFQ for 250 portable satellite communication terminals (global coverage, MIL-STD-188-164A, 75-day delivery); 9. RFQ for 600 armored tactical transport cases (NIJ Level III ballistic protection, waterproof to IP68, 50-day delivery); 10. RFQ for 350 high-output portable water purification units (capable of 1,000 liters/hour, NSF/ANSI Standard 53, 40-day delivery); 11. RFQ for 800 advanced combat helmets (NIJ Level IIIA, integrated comms mount, 90-day delivery); 12. RFQ for 500 tactical field medical kits (NSN compliant, waterproof case, 30-day delivery); 13. RFQ for 1,200 long-range encrypted handheld radios (AES-256 encryption, 40-mile range, MIL-STD-810G, 60-day delivery); 14. RFQ for 100 portable solar-powered field generators (5 kW output, foldable panels, MIL-STD-810G, 70-day delivery)"
+                "These are the ten RFQs which will be used: 1. RFQ for 200 ruggedized field laptops (MIL-STD-810H, 72-hour battery life, integrated GPS, 45-day delivery); 2. RFQ for 400 tactical UAV reconnaissance drones (thermal imaging, encrypted comms, 120-minute flight time, 90-day delivery); 3. RFQ for 1,500 flame-resistant combat uniforms (NFPA 2112 compliant, moisture-wicking, 60-day delivery); 4. RFQ for 250 portable satellite communication terminals (global coverage, MIL-STD-188-164A, 75-day delivery); 5. RFQ for 600 armored tactical transport cases (NIJ Level III ballistic protection, waterproof to IP68, 50-day delivery); 6. RFQ for 350 high-output portable water purification units (capable of 1,000 liters/hour, NSF/ANSI Standard 53, 40-day delivery); 7. RFQ for 800 advanced combat helmets (NIJ Level IIIA, integrated comms mount, 90-day delivery); 8. RFQ for 500 tactical field medical kits (NSN compliant, waterproof case, 30-day delivery); 9. RFQ for 1,200 long-range encrypted handheld radios (AES-256 encryption, 40-mile range, MIL-STD-810G, 60-day delivery); 10. RFQ for 100 portable solar-powered field generators (5 kW output, foldable panels, MIL-STD-810G, 70-day delivery)"
             )
         }
     ]
@@ -137,13 +139,15 @@ elif st.session_state.step == 3:
 
     text_to_copy = st.session_state.messages[-1]["content"] if st.session_state.messages else ""
 
+    safe_text = json.dumps(text_to_copy)  # Safely encode for JS
+
     copy_button_html = f"""
-    <button onclick="
-    navigator.clipboard.writeText(`{text_to_copy}`).then(() => {{
+    <button style="padding:8px 16px; background:#4CAF50; color:white; border:none; border-radius:6px; cursor:pointer;"
+    onclick="navigator.clipboard.writeText({safe_text}).then(() => {{
         alert('Copied to clipboard!');
-    }});
-    ">Copy Final Document</button>
+    }})">
+    Copy Final Document
+    </button>
     """
 
     components.html(copy_button_html, height=50)
-        
