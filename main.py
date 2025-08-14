@@ -61,6 +61,9 @@ if "messages" not in st.session_state:
 if "step" not in st.session_state:
     st.session_state.step = 1
 
+if "report_count" not in st.session_state:
+    st.session_state.report_count = 1
+
 # Step 1: Initial input (machines or initial prompt for RFQ selection)
 if st.session_state.step == 1:
     st.header("Step 1: Enter your machines or RFQ")
