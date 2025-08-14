@@ -2,8 +2,8 @@ import streamlit as st
 import re
 import google.generativeai as genai
 import streamlit.components.v1 as components
-import html
 import json
+import base64
 
 def rerun():
     from streamlit.runtime.scriptrunner import RerunException
@@ -61,50 +61,34 @@ if "messages" not in st.session_state:
 if "step" not in st.session_state:
     st.session_state.step = 1
 
-if "report_count" not in st.session_state:
-    st.session_state.report_count = 0
-
-# Step 1: Initial input (machines or initial prompt for RFQ selection)
+# Step 1
 if st.session_state.step == 1:
     st.header("Step 1: Enter your machines or RFQ")
     user_input = st.text_area("Enter your machines or RFQ for proposal:", height=150)
 
     if st.button("Submit and Continue"):
         if user_input.strip():
-            # Append user input to messages
             st.session_state.messages.append({"role": "user", "content": user_input})
-
-            # Prepare prompt for Gemini
             gemini_prompt = "\n".join([f"{msg['role']}: 1{msg['content']}" for msg in st.session_state.messages])
-
-            # Call Gemini model
             response = model.generate_content(gemini_prompt)
             assistant_text = response.candidates[0].content.parts[0].text
-
-            # Append assistant response
             st.session_state.messages.append({"role": "assistant", "content": assistant_text})
-
-            # Move to Step 2
             st.session_state.step = 2
             rerun()
         else:
             st.warning("Please enter some text before continuing.")
 
-# Step 2: Show two columns: editable proposal and highlighted risks
+# Step 2
 elif st.session_state.step == 2:
     st.header("Step 2: Review and edit the proposal")
 
-    # Get last assistant message as the text to show/edit
     last_assistant_message = ""
     for msg in reversed(st.session_state.messages):
         if msg["role"] == "assistant":
             last_assistant_message = msg["content"]
             break
 
-    # Highlight risky parts
     highlighted_text = highlight_html(last_assistant_message)
-
-    # Extract the proposal part (before ***)
     proposal_text = last_assistant_message
 
     col1, col2 = st.columns(2)
@@ -116,50 +100,44 @@ elif st.session_state.step == 2:
         st.markdown(highlighted_text, unsafe_allow_html=True)
 
     col3, col4 = st.columns(2)
-
-    with col3:
-        st.write()
     with col4:
         if st.button("Finalize Document"):
-            # Finalize means remove all bprr tags and display final text
-            final_text = re.sub(r'bprr(.*?)bprr', r'\1', edited_text.replace("*",""), flags=re.DOTALL)
-            final_text = final_text.replace("***", "\n\n")  # Optional clean up
-
+            final_text = re.sub(r'bprr(.*?)bprr', r'\1', edited_text.replace("*", ""), flags=re.DOTALL)
+            final_text = final_text.replace("***", "\n\n")
             st.session_state.messages.append({"role": "assistant", "content": "Finalized Document:\n\n" + final_text})
-
             st.session_state.step = 3
             rerun()
+        if st.button("🚩"):
+            st.warning("This response has been flagged for review")
 
-        if st.session_state.report_count < 1:
-                if st.button("🚩", help="Report this proposal"):
-                    st.session_state.report_count += 1
-                    components.html("""
-                        <script>
-                            alert("Thank you. This proposal has been reported for review.");
-                        </script>
-                    """, height=0)
-
-# Step 3: Show finalized document and option to restart
+# Step 3
 elif st.session_state.step == 3:
     st.header("Step 3: Finalized Document")
-    # Show last assistant message which should be finalized document
+
     last_assistant_message = ""
     for msg in reversed(st.session_state.messages):
         if msg["role"] == "assistant":
             last_assistant_message = msg["content"]
             break
+
     st.text_area("Final Document", value=last_assistant_message, height=600)
 
-    text_to_copy = st.session_state.messages[-1]["content"] if st.session_state.messages else ""
+    # Ensure we copy exactly the finalized text
+    final_text = last_assistant_message
+    encoded_text = base64.b64encode(final_text.encode()).decode()
 
-    safe_text = json.dumps(text_to_copy)  # e.g. "\"Final document text...\""
+    copy_button_html = f"""
+    <button style="padding:8px 16px; background:#4CAF50; color:white; border:none;
+    border-radius:6px; cursor:pointer;"
+    onclick="
+        (async () => {{
+            const text = atob('{encoded_text}');
+            await navigator.clipboard.writeText(text);
+            alert('Copied to clipboard!');
+        }})()
+    ">
+    Copy Final Text
+    </button>
+    """
 
-    js_string = safe_text[1:-1].replace("'", "\\'")  # strip quotes, escape single quotes
-
-    copy_button_html = (
-        f'<button style="padding:8px 16px; background:#4CAF50; color:white; border:none; '
-        f'border-radius:6px; cursor:pointer;" '
-        f'onclick="(async () => {{ await navigator.clipboard.writeText(\'{js_string}\'); alert(\'Copied to clipboard!\'); }})()">'
-        f'Copy Final Text</button>'
-    )
     components.html(copy_button_html, height=50)
