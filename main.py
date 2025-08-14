@@ -127,6 +127,17 @@ elif st.session_state.step == 2:
             st.session_state.step = 3
             rerun()
 
+        if st.session_state.report_count < 1:
+                if st.button("🚩", help="Report this proposal"):
+                    st.session_state.report_count += 1
+                    components.html("""
+                        <script>
+                            alert("Thank you. This proposal has been reported for review.");
+                        </script>
+                    """, height=0)
+                else:
+                    st.button("🚩", disabled=True, help="Max 1 report allowed per session")
+
 # Step 3: Show finalized document and option to restart
 elif st.session_state.step == 3:
     st.header("Step 3: Finalized Document")
