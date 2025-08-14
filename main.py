@@ -62,7 +62,7 @@ if "step" not in st.session_state:
     st.session_state.step = 1
 
 if "report_count" not in st.session_state:
-    st.session_state.report_count = 1
+    st.session_state.report_count = 0
 
 # Step 1: Initial input (machines or initial prompt for RFQ selection)
 if st.session_state.step == 1:
@@ -138,8 +138,6 @@ elif st.session_state.step == 2:
                             alert("Thank you. This proposal has been reported for review.");
                         </script>
                     """, height=0)
-                else:
-                    st.button("🚩", disabled=True, help="Max 1 report allowed per session")
 
 # Step 3: Show finalized document and option to restart
 elif st.session_state.step == 3:
